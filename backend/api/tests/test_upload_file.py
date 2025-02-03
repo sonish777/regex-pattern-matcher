@@ -17,3 +17,13 @@ class UploadFileTest(SimpleTestCase):
         response = self.client.post(url, { "file":  csv_file }, format="multipart")
 
         self.assertEqual(response.status_code, 201)
+
+    def test_upload_invalid_file(self):
+        """Test that uploading invalid file gives bad request"""
+        url = reverse('upload_file')
+
+        invalid_file_content = b"Invalid file upload should fail!"
+        invalid_file = InMemoryUploadedFile(file=BytesIO(invalid_file_content), field_name='file', name='invalid.txt', content_type='text/plain', size=len(invalid_file_content), charset=None)
+        
+        response = self.client.post(url, { 'file': invalid_file }, format="multipart")
+        self.assertEqual(response.status_code, 400)
