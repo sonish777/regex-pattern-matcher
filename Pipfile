@@ -7,6 +7,9 @@ name = "pypi"
 django = "*"
 djangorestframework = "*"
 drf-spectacular = "*"
+pandas = "*"
+openpyxl = "*"
+xlrd = "*"
 
 [dev-packages]
 

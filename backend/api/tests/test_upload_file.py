@@ -2,7 +2,7 @@ from io import BytesIO
 from django.test import SimpleTestCase
 from django.urls import reverse
 from django.core.files.uploadedfile import InMemoryUploadedFile
-
+from rest_framework import status
 class UploadFileTest(SimpleTestCase):
 
     def test_upload_csv(self):
@@ -26,4 +26,4 @@ class UploadFileTest(SimpleTestCase):
         invalid_file = InMemoryUploadedFile(file=BytesIO(invalid_file_content), field_name='file', name='invalid.txt', content_type='text/plain', size=len(invalid_file_content), charset=None)
         
         response = self.client.post(url, { 'file': invalid_file }, format="multipart")
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
