@@ -3,6 +3,8 @@ from django.test import SimpleTestCase
 from django.urls import reverse
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from rest_framework import status
+
+
 class UploadFileTest(SimpleTestCase):
 
     def test_upload_csv(self):
@@ -12,9 +14,16 @@ class UploadFileTest(SimpleTestCase):
         csv_file_content = "name,age\nSonish,26\nJohn Doe, 26"
         csv_file = BytesIO(csv_file_content.encode())
         csv_file.name = 'test.csv'
-        csv_file = InMemoryUploadedFile(csv_file, None, "test.csv", "text/csv", len(csv_file_content), None)
+        csv_file = InMemoryUploadedFile(csv_file,
+                                        None,
+                                        "test.csv",
+                                        "text/csv",
+                                        len(csv_file_content),
+                                        None)
 
-        response = self.client.post(url, { "file":  csv_file }, format="multipart")
+        response = self.client.post(url,
+                                    {"file":  csv_file},
+                                    format="multipart")
 
         self.assertEqual(response.status_code, 201)
 
@@ -23,7 +32,14 @@ class UploadFileTest(SimpleTestCase):
         url = reverse('upload_file')
 
         invalid_file_content = b"Invalid file upload should fail!"
-        invalid_file = InMemoryUploadedFile(file=BytesIO(invalid_file_content), field_name='file', name='invalid.txt', content_type='text/plain', size=len(invalid_file_content), charset=None)
-        
-        response = self.client.post(url, { 'file': invalid_file }, format="multipart")
-        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+        invalid_file = InMemoryUploadedFile(file=BytesIO(invalid_file_content),
+                                            field_name='file',
+                                            name='invalid.txt',
+                                            content_type='text/plain',
+                                            size=len(invalid_file_content),
+                                            charset=None)
+
+        response = self.client.post(url, {'file': invalid_file},
+                                    format="multipart")
+        self.assertEqual(response.status_code,
+                         status.HTTP_422_UNPROCESSABLE_ENTITY)

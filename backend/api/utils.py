@@ -4,9 +4,12 @@ import io
 import pandas as pd
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.exceptions import ValidationError
 
-def api_response(data=None, error=None, errors=None, status_code=status.HTTP_200_OK):
+
+def api_response(data=None,
+                 error=None,
+                 errors=None,
+                 status_code=status.HTTP_200_OK):
     """Utility function to standardize API responses."""
     if status_code == status.HTTP_422_UNPROCESSABLE_ENTITY:
         response_data = {
@@ -30,14 +33,14 @@ def process_csv(file):
     file_content = file.read().decode('utf-8')
     io_string = io.StringIO(file_content)
     csv_reader = csv.reader(io_string, delimiter=',')
-    headers = next(csv_reader) 
+    headers = next(csv_reader)
     rows = []
     for row in csv_reader:
         row_dict = dict(zip(headers, row))
         rows.append(row_dict)
     return rows
 
+
 def process_excel(file):
     df = pd.read_excel(file)
     return df.to_dict(orient='records')
-    

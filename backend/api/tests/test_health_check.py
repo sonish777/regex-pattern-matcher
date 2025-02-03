@@ -1,6 +1,7 @@
 from django.test import SimpleTestCase
 from django.urls import reverse
 
+
 class HeathCheckTest(SimpleTestCase):
 
     def test_health_check(self):
@@ -8,5 +9,6 @@ class HeathCheckTest(SimpleTestCase):
         url = reverse('health_check')
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertJSONEqual(str(response.content, encoding='utf8'), {'status': 'ok'})
-
+        self.assertJSONEqual(
+            str(response.content, encoding='utf8'),
+            {'status': 'ok'})
