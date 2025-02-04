@@ -11,6 +11,9 @@ pandas = "*"
 openpyxl = "*"
 xlrd = "*"
 django-cors-headers = "*"
+huggingface-hub = "*"
+django-environ = "*"
+openai = "*"
 
 [requires]
 python_version = "3.13"

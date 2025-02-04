@@ -10,6 +10,8 @@ class FileUploadSerializer(serializers.Serializer):
                           ),
                           'application/vnd.ms-excel']
     file = serializers.FileField()
+    pattern = serializers.CharField()
+    replacement = serializers.CharField()
 
     def validate_file(self, value):
         if not value:
