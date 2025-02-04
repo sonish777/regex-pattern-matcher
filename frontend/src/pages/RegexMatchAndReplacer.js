@@ -13,8 +13,8 @@ import {
     Paper,
     TextField
 } from "@mui/material";
-import axios from "axios";
 import { DataList, ExampleData } from "../components";
+import { fileService } from "../services";
 
 export const RegexMatchAndReplacer = () => {
     const [file, setFile] = useState(null);
@@ -57,34 +57,22 @@ export const RegexMatchAndReplacer = () => {
 
     const handleFileUpload = async () => {
         if (!validateInputs()) return;
-
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("pattern", pattern);
-        formData.append("replacement", replacement);
-
         setLoading(true);
         try {
-            const response = await axios.post("http://localhost:8000/api/upload/", formData, {
-                headers: {
-                    "Content-Type": "multipart/form-data"
-                }
-            });
-            const { status, data } = response.data;
+            const response = await fileService.uploadFile(file, pattern, replacement);
+            const { status, data } = response;
             if (status === "success") {
-                setProcessedData(data); // Set the processed data from backend
+                setProcessedData(data);
             }
         } catch (error) {
-            if (error.response?.data) {
-                const { status, errors } = error.response.data;
-                if (status === "error" && errors) {
-                    setErrors((prevError) => ({
-                        ...prevError,
-                        file: errors.file ? errors.file[0] : "",
-                        pattern: errors.pattern ? errors.pattern[0] : "",
-                        replacement: errors.replacement ? errors.replacement[0] : ""
-                    }));
-                }
+            const { status, errors } = error;
+            if (status === "error" && errors) {
+                setErrors((prevError) => ({
+                    ...prevError,
+                    file: errors.file ? errors.file[0] : "",
+                    pattern: errors.pattern ? errors.pattern[0] : "",
+                    replacement: errors.replacement ? errors.replacement[0] : ""
+                }));
             }
         } finally {
             setLoading(false);
