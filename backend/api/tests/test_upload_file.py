@@ -22,7 +22,9 @@ class UploadFileTest(SimpleTestCase):
                                         None)
 
         response = self.client.post(url,
-                                    {"file":  csv_file},
+                                    {"file":  csv_file,
+                                     "pattern": "Find numbers",
+                                     "replacement": "***"},
                                     format="multipart")
 
         self.assertEqual(response.status_code, 201)
@@ -39,7 +41,19 @@ class UploadFileTest(SimpleTestCase):
                                             size=len(invalid_file_content),
                                             charset=None)
 
-        response = self.client.post(url, {'file': invalid_file},
+        response = self.client.post(url, {'file': invalid_file,
+                                          "pattern": "Find numbers",
+                                          "replacement": "***"},
                                     format="multipart")
         self.assertEqual(response.status_code,
                          status.HTTP_422_UNPROCESSABLE_ENTITY)
+        
+    def test_missing_required_fields_error(self):
+        """Test that missing required fields gives error response"""
+        url = reverse('upload_file')
+        response = self.client.post(url, {}, format="multipart")
+        self.assertEqual(response.status_code,
+                         status.HTTP_422_UNPROCESSABLE_ENTITY)
+        self.assertIn("pattern", response.data.get('errors'))
+        self.assertIn("replacement", response.data.get('errors'))
+        self.assertIn("file", response.data.get('errors'))
