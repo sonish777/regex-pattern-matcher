@@ -5,6 +5,7 @@ import {
     Card,
     CardContent,
     CardHeader,
+    Checkbox,
     FilledInput,
     FormControl,
     FormControlLabel,
@@ -20,6 +21,7 @@ export const RegexMatchAndReplacer = () => {
     const [file, setFile] = useState(null);
     const [pattern, setPattern] = useState("");
     const [replacement, setReplacement] = useState("");
+    const [applyTransformation, setApplyTransformation] = useState(false);
     const [processedData, setProcessedData] = useState(null);
     const [errors, setErrors] = useState({
         pattern: "",
@@ -44,6 +46,10 @@ export const RegexMatchAndReplacer = () => {
         setErrors((prevErrors) => ({ ...prevErrors, replacement: "" }));
     };
 
+    const handleTransformationChange = (e) => {
+        setApplyTransformation((prevTransformation) => !prevTransformation);
+    }
+
     const validateInputs = () => {
         let newErrors = {};
 
@@ -59,7 +65,7 @@ export const RegexMatchAndReplacer = () => {
         if (!validateInputs()) return;
         setLoading(true);
         try {
-            const response = await fileService.uploadFile(file, pattern, replacement);
+            const response = await fileService.uploadFile(file, pattern, replacement, applyTransformation);
             const { status, data } = response;
             if (status === "success") {
                 setProcessedData(data);
@@ -115,17 +121,20 @@ export const RegexMatchAndReplacer = () => {
                             </FormControl>
 
                             {/* File Upload Input */}
-                            <Box>
-                                <FormControl fullWidth margin="dense">
-                                    <FormControlLabel
-                                        control={<FilledInput type="file" onChange={handleFileChange} />}
-                                        label="Upload a CSV/Excel file"
-                                        labelPlacement="top"
-                                        sx={{ "&.MuiFormControlLabel-root": { alignItems: "start", margin: 0 } }}
-                                    />
-                                    {errors.file && <FormHelperText error>{errors.file}</FormHelperText>}
-                                </FormControl>
-                            </Box>
+                            <FormControl fullWidth margin="dense">
+                                <FormControlLabel
+                                    control={<FilledInput type="file" onChange={handleFileChange} />}
+                                    label="Upload a CSV/Excel file"
+                                    labelPlacement="top"
+                                    sx={{ "&.MuiFormControlLabel-root": { alignItems: "start", margin: 0 } }}
+                                />
+                                {errors.file && <FormHelperText error>{errors.file}</FormHelperText>}
+                            </FormControl>
+                            {/* Data Transformation Checkbox */}
+                            <FormControl>
+                                <FormControlLabel control={<Checkbox onChange={handleTransformationChange} />} label="Apply Data Transformations" />
+                                <FormHelperText>Capitalize names, normalize emails, and format amount figures</FormHelperText>
+                            </FormControl>
                         </FormGroup>
                         {/* Upload Button */}
                         <Button

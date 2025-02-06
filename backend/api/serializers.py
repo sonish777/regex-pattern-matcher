@@ -12,6 +12,7 @@ class FileUploadSerializer(serializers.Serializer):
     file = serializers.FileField()
     pattern = serializers.CharField()
     replacement = serializers.CharField()
+    apply_transformations = serializers.BooleanField()
 
     def validate_file(self, value):
         if not value:

@@ -62,8 +62,8 @@ def extract_json_from_plain_text(text):
     try:
         json_match = re.search(r'\{.*\}', text, re.DOTALL)
         if not json_match:
-            return {"regex": None, "column": None}
+            return {}
         json_text = json_match.group(0)
         return json.loads(json_text)
     except json.JSONDecodeError:
-        return {"regex": None, "column": None}
+        return {}

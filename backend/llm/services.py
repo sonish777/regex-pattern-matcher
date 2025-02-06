@@ -42,4 +42,37 @@ class LLMService:
             ],
             max_tokens=500
         )
-        return response.choices[0].message.content or ''
+        return response.choices[0].message.content or '{}'
+
+    def suggest_transformations(self, headers=[]):
+        """Uses LLM to analyze column headers and suggest transformations."""
+        prompt = f"""
+        Given the list of column headers: {json.dumps(headers)}, suggest appropriate data transformations.
+        The transformations should be useful for data cleaning and consistency.
+        Return a JSON response with column names as keys and the suggested transformations as values.
+
+        Supported transformations:
+        - 'capitalize': Capitalize words in text columns (e.g., names, addresses).
+        - 'normalize_email': Convert emails to lowercase.
+        - 'format_currency': Ensure numbers in currency columns are formatted with commas and two decimal places.
+
+        ### Example Input:
+        - **Column Headers:** ['customer_name', 'email_address', 'price', 'phone_number']
+
+        ### Expected Output (JSON format):
+        {{
+        "customer_name": "capitalize",
+        "email_address": "normalize_email",
+        "price": "format_currency"
+        }}
+
+        Rules:
+        - Return JSON only, no explanations.
+        - If no transformation is needed, omit the column.
+        """  # noqa: E501
+        response = self.client.chat.completions.create(
+            model=self.client.model,
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=500
+        )
+        return response.choices[0].message.content or "{}"

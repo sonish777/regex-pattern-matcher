@@ -8,11 +8,12 @@ class FileService {
         });
     }
 
-    async uploadFile(file, pattern, replacement) {
+    async uploadFile(file, pattern, replacement, applyTransformations) {
         const formData = new FormData();
         formData.append("file", file);
         formData.append("pattern", pattern);
         formData.append("replacement", replacement);
+        formData.append("apply_transformations", applyTransformations);
 
         try {
             const response = await this._service.post("/upload/", formData);

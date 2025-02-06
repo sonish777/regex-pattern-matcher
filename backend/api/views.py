@@ -5,7 +5,7 @@ from drf_spectacular.utils import extend_schema
 from .serializers import FileUploadSerializer
 from .utils import api_response, process_csv, process_excel
 from llm.services import LLMService
-from .services import RegexParserService
+from .services import RegexParserService, DataTransformationService
 
 
 class HealthCheckView(APIView):
@@ -24,6 +24,7 @@ class UploadAndProcessView(APIView):
         super().setup(request, *args, **kwargs)
         self.llm_service = LLMService()
         self.regex_parser_service = RegexParserService()
+        self.data_transformation_service = DataTransformationService()
 
     @extend_schema(
         summary="Upload a CSV file for processing",
@@ -68,18 +69,21 @@ class UploadAndProcessView(APIView):
             headers = list(rows[0].keys())
             llm_response = self.llm_service \
                 .generate_regex_from_description(pattern, headers)
-            # Static data to avoid API calls
-            # llm_response = """{
-            #     "regex": "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\\\.[a-zA-Z]{2,}",
-            #     "column": "Email"
-            # }"""
             if not llm_response:
                 return api_response(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     error="Couldn't not generate regex from description.")
             rows = self.regex_parser_service \
                 .parse(llm_response) \
-                .apply_replacement(rows=rows, replacement=replacement)
+                .apply_replacement(rows=rows, replacement=replacement.strip())
+            if serializer.validated_data.get("apply_transformations"):
+                llm_transformation_response = self.llm_service \
+                    .suggest_transformations(headers)
+                if llm_transformation_response:
+                    rows = self.data_transformation_service \
+                        .parse(llm_transformation_response) \
+                        .apply_transformations(rows)
+
             return api_response(data=rows, status_code=status.HTTP_201_CREATED)
         except Exception as e:
             return api_response(
