@@ -1,3 +1,6 @@
+from uuid import uuid4
+from drf_spectacular.utils import OpenApiParameter
+from django.core.cache import cache
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
@@ -60,6 +63,8 @@ class UploadAndProcessView(APIView):
             file = serializer.validated_data.get('file')
             pattern = serializer.validated_data.get('pattern')
             replacement = serializer.validated_data.get('replacement')
+
+            session_id = uuid4()
             rows = process_csv(file) \
                 if file.name.lower().endswith('.csv') \
                 else process_excel(file)
@@ -83,9 +88,87 @@ class UploadAndProcessView(APIView):
                     rows = self.data_transformation_service \
                         .parse(llm_transformation_response) \
                         .apply_transformations(rows)
-
-            return api_response(data=rows, status_code=status.HTTP_201_CREATED)
+            cache.set(session_id, rows, timeout=60*60)
+            response_data = {
+                "total": len(rows),
+                "total_pages": round(len(rows)/5),
+                "page": 0,  # 0 indexed page
+                "page_size": 5,
+                "rows": rows[0:5]
+            }
+            return api_response(data=response_data,
+                                session_id=session_id,
+                                status_code=status.HTTP_201_CREATED)
         except Exception as e:
             return api_response(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 message=f"Error: {str(e)}")
+
+
+class GetProcessedDataView(APIView):
+
+    @extend_schema(
+        summary="Get the processed data with pagination",
+        parameters=[
+            OpenApiParameter(
+                name="session_id",
+                description="UUID session ID of the processed data",
+                required=True,
+                type=str
+            ),
+            OpenApiParameter(
+                name="page",
+                description="Page number for pagination",
+                required=False,
+                type=int,
+                default=1
+            ),
+            OpenApiParameter(
+                name="page_size",
+                description="Page size for pagination",
+                required=False,
+                type=int,
+                default=5
+            )
+        ],
+        responses={200:
+                   {"type": "object", "properties":
+                    {"total": {"type": "integer"},
+                     "session_id": {"type": "string"},
+                     "data": {"type": "array", "items": {"type": "object"}}}}}
+    )
+    def get(self, request):
+        try:
+            session_id = request.query_params.get('session_id')
+            page = int(request.query_params.get('page', 1))
+            page_size = int(request.query_params.get('page_size', 5))
+
+            if not session_id:
+                return api_response(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    error="The requested resource was not found.")
+
+            processed_data = cache.get(session_id)
+
+            if not processed_data:
+                return api_response(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    error="The requested resource was not found.")
+
+            start_index = page * page_size  # page 0 indexed
+            end_index = (page + 1) * page_size
+            data = processed_data[start_index:end_index]
+
+            paginated_response = {
+                "total": len(processed_data),
+                "total_pages": round(len(processed_data)/page_size),
+                "page": page,
+                "page_size": page_size,
+                "rows": data
+            }
+        except Exception as e:
+            return api_response(error=str(e),
+                                status_code=status.
+                                HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return api_response(data=paginated_response, session_id=session_id)

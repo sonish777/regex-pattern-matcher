@@ -35,8 +35,8 @@ export const ExampleData = () => {
                 </FormGroup>
             </Box>
             <Box display="flex" gap={5} marginTop={3}>
-                <DataList data={SAMPLE_DATA.raw} header="Sample Input Data" />
-                <DataList data={SAMPLE_DATA.processed} header="Processed Data" />
+                <DataList data={{rows: SAMPLE_DATA.raw}} header="Sample Input Data" />
+                <DataList data={{rows: SAMPLE_DATA.processed}} header="Processed Data" />
             </Box>
         </div>
     );

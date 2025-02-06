@@ -22,6 +22,17 @@ class FileService {
             throw error.response?.data || { status: "error", errors: {} };
         }
     }
+
+    async getProcessedData(sessionId, { page, rowsPerPage } = { page: 1, rowsPerPage: 5 }) {
+        try {
+            const response = await this._service.get("/processed-data/", {
+                params: { session_id: sessionId, page, page_size: rowsPerPage }
+            });
+            return response.data;
+        } catch (error) {
+            throw error.response?.data || { status: "error", error: {} };
+        }
+    }
 }
 
 export const fileService = new FileService("http://localhost:8000/api");

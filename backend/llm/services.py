@@ -29,6 +29,7 @@ class LLMService:
 
         Rules:
         - Return only JSON. No explanations or extra text.
+        - The `regex` field uses **double backslashes (\\\\) for escaping**.
         - If unsure, choose the most relevant column.
         - If no relevant column exists, return null values for both.
         """  # noqa: E501

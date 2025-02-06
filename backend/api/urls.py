@@ -7,5 +7,8 @@ urlpatterns = [
     path('schema/', SpectacularAPIView.as_view(), name='api-schema'),
     path('docs/', SpectacularSwaggerView.as_view(url_name='api-schema'),
          name='api-docs'),
-    path('upload/', views.UploadAndProcessView.as_view(), name='upload_file')
+    path('upload/', views.UploadAndProcessView.as_view(), name='upload_file'),
+    path('processed-data/',
+         views.GetProcessedDataView.as_view(),
+         name='processed-data')
 ]

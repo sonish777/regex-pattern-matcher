@@ -48,7 +48,7 @@ class DataTransformationService:
             "capitalize": lambda v: str(v).strip().title(),
             "normalize_email": lambda v: str(v).strip().lower(),
             "format_currency": lambda v: f"{float(v):,.2f}"
-            if v.replace(',', '').isdigit() else v
+            if str(v).replace(',', '').isdigit() else v
         }
 
         return transformation_map.get(transformation, lambda v: v)(value)

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import {
+    Alert,
     Box,
     Button,
     Card,
@@ -12,6 +13,7 @@ import {
     FormGroup,
     FormHelperText,
     Paper,
+    Snackbar,
     TextField
 } from "@mui/material";
 import { DataList, ExampleData } from "../components";
@@ -26,7 +28,8 @@ export const RegexMatchAndReplacer = () => {
     const [errors, setErrors] = useState({
         pattern: "",
         replacement: "",
-        file: ""
+        file: "",
+        generic: ""
     });
     const [loading, setLoading] = useState(false);
 
@@ -48,7 +51,35 @@ export const RegexMatchAndReplacer = () => {
 
     const handleTransformationChange = (e) => {
         setApplyTransformation((prevTransformation) => !prevTransformation);
-    }
+    };
+
+    const handleOnCloseSnackbar = (e) => {
+        setErrors((prevErrors) => ({ ...prevErrors, generic: "" }));
+    };
+
+    const refetchDataOnPagination = async (page, rowsPerPage) => {
+        setLoading(true);
+        try {
+            const response = await fileService.getProcessedData(processedData.sessionId, {
+                page,
+                rowsPerPage
+            });
+            const { status, data, session_id } = response;
+            if (status === "success") {
+                setProcessedData({ ...data, sessionId: session_id });
+            }
+        } catch (error) {
+            const { status, error: errorMessage } = error;
+            if (status === "error" && error) {
+                setErrors((prevError) => ({
+                    ...prevError,
+                    generic: errorMessage || ""
+                }));
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const validateInputs = () => {
         let newErrors = {};
@@ -66,18 +97,23 @@ export const RegexMatchAndReplacer = () => {
         setLoading(true);
         try {
             const response = await fileService.uploadFile(file, pattern, replacement, applyTransformation);
-            const { status, data } = response;
+            const { status, data, session_id } = response;
             if (status === "success") {
-                setProcessedData(data);
+                setProcessedData({ ...data, sessionId: session_id });
             }
         } catch (error) {
             const { status, errors } = error;
             if (status === "error" && errors) {
                 setErrors((prevError) => ({
                     ...prevError,
-                    file: errors.file ? errors.file[0] : "",
-                    pattern: errors.pattern ? errors.pattern[0] : "",
-                    replacement: errors.replacement ? errors.replacement[0] : ""
+                    file: errors?.file ? errors.file?.[0] : "",
+                    pattern: errors?.pattern ? errors.pattern?.[0] : "",
+                    replacement: errors?.replacement ? errors.replacement?.[0] : "",
+                }));
+            } else {
+                setErrors((prevError) => ({
+                   ...prevError,
+                   generic: error.error || "Something went wrong!! :(",
                 }));
             }
         } finally {
@@ -151,8 +187,15 @@ export const RegexMatchAndReplacer = () => {
                 </Card>
             </Paper>
             <Paper sx={{ padding: 4, boxShadow: 5, width: "100%" }}>
-                {processedData ? <DataList data={processedData} header="Processed Data" /> : <ExampleData />}
+                {processedData ? (
+                    <DataList data={processedData} header="Processed Data" pagination={true} refetchDataOnPagination={refetchDataOnPagination} />
+                ) : (
+                    <ExampleData />
+                )}
             </Paper>
+            <Snackbar erro open={!!errors.generic} autoHideDuration={6000} onClose={handleOnCloseSnackbar}>
+                <Alert onClose={handleOnCloseSnackbar} severity="error">{errors.generic}</Alert>
+            </Snackbar>
         </Box>
     );
 };

@@ -11,24 +11,32 @@ from rest_framework import status
 def api_response(data=None,
                  error=None,
                  errors=None,
+                 session_id=None,
                  status_code=status.HTTP_200_OK):
     """Utility function to standardize API responses."""
-    if status_code == status.HTTP_422_UNPROCESSABLE_ENTITY:
-        response_data = {
+    try:
+        if status_code == status.HTTP_422_UNPROCESSABLE_ENTITY:
+            response_data = {
+                "status": "error",
+                "errors": errors
+            }
+        elif status_code >= status.HTTP_400_BAD_REQUEST:
+            response_data = {
+                "status": "error",
+                "error": error
+            }
+        else:
+            response_data = {
+                "status": "success",
+                "data": data or [],
+                "session_id": session_id or ""
+            }
+        return Response(response_data, status=status_code)
+    except Exception:
+        return Response({
             "status": "error",
-            "errors": errors
-        }
-    elif status_code >= status.HTTP_400_BAD_REQUEST:
-        response_data = {
-            "status": "error",
-            "error": error
-        }
-    else:
-        response_data = {
-            "status": "success",
-            "data": data or [],
-        }
-    return Response(response_data, status=status_code)
+            "error": "Something went wrong!"
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 def detect_delimiter(file_content):
@@ -55,6 +63,7 @@ def process_csv(file):
 
 def process_excel(file):
     df = pd.read_excel(file)
+    df = df.dropna(axis=1, how='any')
     return df.to_dict(orient='records')
 
 

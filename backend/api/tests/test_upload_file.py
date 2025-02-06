@@ -71,10 +71,10 @@ class UploadFileTest(SimpleTestCase):
 
         self.assertEqual(response.status_code, 201)
         response_data = response.data  # { status, data }
-        self.assertEqual(response_data.get('data')[0]
+        self.assertEqual(response_data.get('data').get('rows')[0]
                          .get('email'),
                          replacement)
-        self.assertEqual(response_data.get('data')[1]
+        self.assertEqual(response_data.get('data').get('rows')[1]
                          .get('email'),
                          replacement)
 
@@ -91,9 +91,9 @@ class UploadFileTest(SimpleTestCase):
 
         self.assertEqual(response.status_code, 201)
         response_data = response.data  # { status, data }
-        self.assertIn(response_data.get('data')[0]
+        self.assertIn(response_data.get('data').get('rows')[0]
                       .get('name'),
                       self.normalized_names)
-        self.assertIn(response_data.get('data')[1]
+        self.assertIn(response_data.get('data').get('rows')[1]
                       .get('name'),
                       self.normalized_names)
