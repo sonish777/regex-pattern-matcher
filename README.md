@@ -17,7 +17,7 @@ Before setting up the project, ensure you have the following:
 After cloning the repository,
 ### 1. Install python dependencies using pipenv
 ```bash
-pipenv install
+pipenv install --dev
 ```
 ### 2. In backend directory, create a .env file and copy contents of .env.example and update the variables according to your system and configuration
 
