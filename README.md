@@ -5,6 +5,10 @@ This project is built with the following technologies:
 - **Backend**: Django, Django Rest Framework, Redis (for caching)
 - **Frontend**: React, Material UI (MUI), Axios for API requests
 - **AI Integration**: Hugging Face API for generating regular expressions (LLM)
+
+## App Demo Video:
+Open the file `app_demo.mp4` in the root directory or click on the thumbnail below.
+[![Video Thumbnail](./thumb.png)](./app_demo.mp4)
   
 ## Pre-requisites
 Before setting up the project, ensure you have the following:
