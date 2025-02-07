@@ -193,7 +193,7 @@ export const RegexMatchAndReplacer = () => {
                     <ExampleData />
                 )}
             </Paper>
-            <Snackbar erro open={!!errors.generic} autoHideDuration={6000} onClose={handleOnCloseSnackbar}>
+            <Snackbar open={!!errors.generic} autoHideDuration={6000} onClose={handleOnCloseSnackbar}>
                 <Alert onClose={handleOnCloseSnackbar} severity="error">{errors.generic}</Alert>
             </Snackbar>
         </Box>
